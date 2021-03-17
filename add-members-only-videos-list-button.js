@@ -1,5 +1,5 @@
 // ==UserScript==
-// @version      1.0.2
+// @version      1.0.3
 // @author       TsukiAkiba
 // @description   增加YouTube會限清單分頁連結到頻道主頁上
 // @description:en  Add members-only-videos link to YouTube channel main page.
@@ -14,7 +14,7 @@
 (function() {
     'use strict';
     window.onload = function() {
-        function addLink(targetURL) {
+        function addLink() {
             const displayTextMap = {
                 'zh-Hant-TW': '會限清單',
                 'zh-Hant-HK': '會限清單',
@@ -37,38 +37,29 @@
             const target = document.querySelector("tp-yt-paper-tab:nth-last-of-type(3)");
 
             target.addEventListener('click', function() {
+                let targetURL = `${location.protocol}//${location.host}/playlist?list=${location.pathname.split('/')[2].replace(/^UC/, 'UUMO')}`;
                 window.open(targetURL);
             });
-        }
-
-        function testElement(targetURL, observer) {
-            if (document.querySelector("tp-yt-paper-tab:nth-last-of-type(2)")) {
-                observer.disconnect();
-                addLink(targetURL);
-            } else {
-                setTimeout(() => testElement(targetURL, observer), 1000);
-            }
         }
 
         let targetURL;
         let href = location.href;
         if (/\/channel\//.test(href)) {
-            targetURL = `${location.protocol}//${location.host}/playlist?list=${location.pathname.split('/')[2].replace(/^UC/, 'UUMO')}`;
-            addLink(targetURL);
-        } else if (/\/watch\?/.test(location.href)) {
-            let link = document.querySelector('a.yt-simple-endpoint.style-scope.ytd-video-owner-renderer').href;
-            targetURL = `${location.protocol}//${location.host}/playlist?list=${link.split('/').pop().replace(/^UC/, 'UUMO')}`;
-
-            if (window.MutationObserver) {
-                let observer = new MutationObserver(function(mutation) {
-                    if (mutation[0].type == 'childList') {
-                        testElement(targetURL, observer);
-                    }
-                });
-                observer.observe(document.querySelector('ytd-page-manager.style-scope'), { childList: true });
-            }
+            addLink();
         } else {
-            return;
+            if (window.MutationObserver) {
+                let observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(mutation => {
+                        if (mutation.type == 'childList') {
+                            mutation.addedNodes.forEach(node => {
+                                // tp-yt-app-header.style-scope.ytd-c4-tabbed-header-renderer
+                                if (node.tagName == "TP-YT-APP-HEADER" && node.className == "style-scope ytd-c4-tabbed-header-renderer") { addLink(); }
+                            });
+                        }
+                    });
+                });
+                observer.observe(document.querySelector('body'), { "childList": true, "subtree": true });
+            }
         }
     };
 })();
