@@ -1,14 +1,15 @@
 // ==UserScript==
-// @version      1.0.1
+// @version      1.0.2
 // @author       TsukiAkiba
 // @description   增加YouTube會限清單分頁連結到頻道主頁上
 // @description:en  Add members-only-videos link to YouTube channel main page.
 // @license      MIT License
 // @name         增加會限清單分頁連結
 // @name:en      Add members-only-videos link
-// @match        https://www.youtube.com/channel/*
+// @match        https://www.youtube.com/*
 // @namespace    https://github.com/erase2004/add-members-only-videos-list-button
 // @grant        none
+// @run-at       document-start
 // ==/UserScript==
 (function() {
     'use strict';
