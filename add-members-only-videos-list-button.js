@@ -14,7 +14,7 @@
 (function() {
     'use strict';
     window.onload = function() {
-        function addLink() {
+        function addLink(chId) {
             const displayTextMap = {
                 'zh-Hant-TW': '會限清單',
                 'zh-Hant-HK': '會限清單',
@@ -37,8 +37,7 @@
             const target = document.querySelector("tp-yt-paper-tab:nth-last-of-type(3)");
 
             target.addEventListener('click', function() {
-                const listId = window.ytInitialData.header.c4TabbedHeaderRenderer.channelId.replace(/^UC/, 'UUMO');
-                const targetURL = `${location.protocol}//${location.host}/playlist?list=${listId}`;
+                const targetURL = `${location.protocol}//${location.host}/playlist?list=${chId.replace(/^UC/, 'UUMO')}`;
                 window.open(targetURL);
             });
         }
@@ -46,21 +45,22 @@
         let targetURL;
         let href = location.href;
         if (/\/\/[^\/]+\/c(hannel)?\//.test(href)) {
-            addLink();
-        } else {
-            if (window.MutationObserver) {
-                let observer = new MutationObserver(function(mutations) {
-                    mutations.forEach(mutation => {
-                        if (mutation.type == 'childList') {
-                            mutation.addedNodes.forEach(node => {
-                                // tp-yt-app-header.style-scope.ytd-c4-tabbed-header-renderer
-                                if (node.tagName == "TP-YT-APP-HEADER" && node.className == "style-scope ytd-c4-tabbed-header-renderer") { addLink(); }
-                            });
-                        }
-                    });
+            addLink(window.ytInitialData.header.c4TabbedHeaderRenderer.channelId);
+        }
+        if (window.MutationObserver) {
+            let observer = new MutationObserver(function(mutations) {
+                mutations.forEach(mutation => {
+                    if (mutation.type == 'childList') {
+                        mutation.addedNodes.forEach(node => {
+                            // tp-yt-app-header.style-scope.ytd-c4-tabbed-header-renderer
+                            if (node.tagName == "TP-YT-APP-HEADER" && node.className == "style-scope ytd-c4-tabbed-header-renderer") {
+                                addLink(node.__dataHost.__data.data.channelId);
+                            }
+                        });
+                    }
                 });
-                observer.observe(document.querySelector('body'), { "childList": true, "subtree": true });
-            }
+            });
+            observer.observe(document.querySelector('body'), { "childList": true, "subtree": true });
         }
     };
 })();
