@@ -46,21 +46,20 @@
         let targetURL;
         let href = location.href;
         if (/\/\/[^\/]+\/c(hannel)?\//.test(href)) {
-            addLink(window.ytInitialData.header.c4TabbedHeaderRenderer.channelId);
-        } else {
-            if (window.MutationObserver) {
-                let observer = new MutationObserver(function(mutations) {
-                    mutations.forEach(mutation => {
-                        if (mutation.type == 'childList') {
-                            mutation.addedNodes.forEach(node => {
-                                // tp-yt-app-header.style-scope.ytd-c4-tabbed-header-renderer
-                                if (node.tagName == "TP-YT-APP-HEADER" && node.className == "style-scope ytd-c4-tabbed-header-renderer") { addLink(); }
-                            });
-                        }
-                    });
+            addLink();
+        }
+        if (window.MutationObserver) {
+            let observer = new MutationObserver(function(mutations) {
+                mutations.forEach(mutation => {
+                    if (mutation.type == 'childList') {
+                        mutation.addedNodes.forEach(node => {
+                            // tp-yt-app-header.style-scope.ytd-c4-tabbed-header-renderer
+                            if (node.tagName == "TP-YT-APP-HEADER" && node.className == "style-scope ytd-c4-tabbed-header-renderer") { addLink(); }
+                        });
+                    }
                 });
-                observer.observe(document.querySelector('body'), { "childList": true, "subtree": true });
-            }
+            });
+            observer.observe(document.querySelector('body'), { "childList": true, "subtree": true });
         }
     };
 })();
