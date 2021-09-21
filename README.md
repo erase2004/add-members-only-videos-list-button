@@ -17,4 +17,8 @@ A script to add link to members-only-videos list to YouTube channel page
 # contributors
 This project exists thanks to all the people who contribute. [[Contribute]](CONTRIBUTING.md).
 
-<a href="graphs/contributors"></a>
+<a href="https://github.com/erase2004/add-members-only-videos-list-button/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=erase2004/add-members-only-videos-list-button" />
+</a>
+
+Made with [contributors-img](https://contrib.rocks).
