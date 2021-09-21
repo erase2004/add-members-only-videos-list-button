@@ -37,29 +37,29 @@
             const target = document.querySelector("tp-yt-paper-tab:nth-last-of-type(3)");
 
             target.addEventListener('click', function() {
-                let targetURL = `${location.protocol}//${location.host}/playlist?list=${location.pathname.split('/')[2].replace(/^UC/, 'UUMO')}`;
+                const chId = document.querySelector("ytd-c4-tabbed-header-renderer").__data.data.channelId;
+                const targetURL = `${location.protocol}//${location.host}/playlist?list=${chId.replace(/^UC/, 'UUMO')}`;
                 window.open(targetURL);
             });
         }
 
         let targetURL;
         let href = location.href;
-        if (/\/channel\//.test(href)) {
+        if (/\/\/[^\/]+\/c(hannel)?\//.test(href)) {
             addLink();
-        } else {
-            if (window.MutationObserver) {
-                let observer = new MutationObserver(function(mutations) {
-                    mutations.forEach(mutation => {
-                        if (mutation.type == 'childList') {
-                            mutation.addedNodes.forEach(node => {
-                                // tp-yt-app-header.style-scope.ytd-c4-tabbed-header-renderer
-                                if (node.tagName == "TP-YT-APP-HEADER" && node.className == "style-scope ytd-c4-tabbed-header-renderer") { addLink(); }
-                            });
-                        }
-                    });
+        }
+        if (window.MutationObserver) {
+            let observer = new MutationObserver(function(mutations) {
+                mutations.forEach(mutation => {
+                    if (mutation.type == 'childList') {
+                        mutation.addedNodes.forEach(node => {
+                            // tp-yt-app-header.style-scope.ytd-c4-tabbed-header-renderer
+                            if (node.tagName == "TP-YT-APP-HEADER" && node.className == "style-scope ytd-c4-tabbed-header-renderer") { addLink(); }
+                        });
+                    }
                 });
-                observer.observe(document.querySelector('body'), { "childList": true, "subtree": true });
-            }
+            });
+            observer.observe(document.querySelector('body'), { "childList": true, "subtree": true });
         }
     };
 })();
