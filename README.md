@@ -16,3 +16,5 @@ A script to add link to members-only-videos list to YouTube channel page
 
 # contributors
 This project exists thanks to all the people who contribute. [[Contribute]](CONTRIBUTING.md).
+
+<a href="graphs/contributors"></a>
