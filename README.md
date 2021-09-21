@@ -13,3 +13,6 @@ A script to add link to members-only-videos list to YouTube channel page
 > ![Japanese](./screenshots/ja-JP.png)
 * Other, Default
 > ![Other, default](./screenshots/en.png)
+
+# contributors
+This project exists thanks to all the people who contribute. [[Contribute]](CONTRIBUTING.md).
