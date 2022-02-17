@@ -55,9 +55,8 @@
             }
         }
 
-        let targetURL;
         let href = location.href;
-        if (/\/\/[^\/]+\/c(hannel)?\//.test(href)) {
+        if (/\/\/[^\/]+\/(c(hannel)?|user)\//.test(href)) {
             addLink();
         }
         if (window.MutationObserver) {
