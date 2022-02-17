@@ -1,5 +1,5 @@
 // ==UserScript==
-// @version      1.0.4
+// @version      1.0.5
 // @author       TsukiAkiba
 // @description   增加YouTube會限清單分頁連結到頻道主頁上
 // @description:en  Add members-only-videos link to YouTube channel main page.
@@ -22,10 +22,15 @@
                 'ja-JP': 'メン限リスト',
                 'en': 'Members-only-video List'
             };
+            const anchorAttribute = 'data-anchor-attribute';
             const anchorElement = document.querySelector("tp-yt-paper-tab:nth-last-of-type(2)");
+
+            if (anchorElement === null) return;
+            if (document.querySelector(`[${anchorAttribute}]`) !== null) return;
+
             let displayText = displayTextMap[document.documentElement.lang] || displayTextMap.en;
             const newNode = document.createRange().createContextualFragment(`
-                <tp-yt-paper-tab class="style-scope ytd-c4-tabbed-header-renderer" role="tab" aria-disabled="false" aria-selected="true" tabindex="0"><!--css-build:shady-->
+                <tp-yt-paper-tab class="style-scope ytd-c4-tabbed-header-renderer" role="tab" aria-disabled="false" aria-selected="true" tabindex="0" ${anchorAttribute}><!--css-build:shady-->
                     <div class="tab-content style-scope tp-yt-paper-tab">${displayText}</div>
 	                <paper-ripple class="style-scope tp-yt-paper-tab"><!--css-build:shady-->
                         <div id="background" class="style-scope paper-ripple" style="opacity: 0.0084;"></div>
@@ -43,19 +48,15 @@
             });
         }
 
-        let targetURL;
-        let href = location.href;
-        if (/\/\/[^\/]+\/c(hannel)?\//.test(href)) {
-            addLink();
-        }
         if (window.MutationObserver) {
             let observer = new MutationObserver(function(mutations) {
                 mutations.forEach(mutation => {
                     if (mutation.type == 'childList') {
-                        mutation.addedNodes.forEach(node => {
-                            // tp-yt-app-header.style-scope.ytd-c4-tabbed-header-renderer
-                            if (node.tagName == "TP-YT-APP-HEADER" && node.className == "style-scope ytd-c4-tabbed-header-renderer") { addLink(); }
-                        });
+                        const target = mutation.target
+
+                        if (/ytd\-page\-manager/i.test(target.tagName) || target.id === 'tabsContent') {
+                           addLink()
+                        }
                     }
                 });
             });
