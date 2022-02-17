@@ -36,12 +36,22 @@
                 `);
                 anchorElement.parentNode.insertBefore(newNode, anchorElement);
                 const target = document.querySelector("tp-yt-paper-tab:nth-last-of-type(3)");
-
                 target.addEventListener('click', function() {
                     const chId = document.querySelector("ytd-c4-tabbed-header-renderer").__data.data.channelId;
                     const targetURL = `${location.protocol}//${location.host}/playlist?list=${chId.replace(/^UC/, 'UUMO')}`;
                     window.open(targetURL);
                 });
+
+                if (window.MutationObserver) {
+                    // monitor for rendering
+                    let observer = new MutationObserver(function(mutations) {
+                        if (!!mutations.find(mutation => mutation.type == 'childList' && (mutation.addedNodes.length || mutation.removedNodes.length))) {
+                            observer.disconnect(); // required ...
+                            addLink();
+                        }
+                    });
+                    observer.observe(document.querySelector('#tabsContent'), { "childList": true });
+                }
             }
         }
 
