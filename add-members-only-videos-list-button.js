@@ -10,6 +10,8 @@
 // @namespace    https://github.com/erase2004/add-members-only-videos-list-button
 // @grant        none
 // @run-at       document-start
+// @downloadURL https://update.greasyfork.org/scripts/423403/%E5%A2%9E%E5%8A%A0%E6%9C%83%E9%99%90%E6%B8%85%E5%96%AE%E5%88%86%E9%A0%81%E9%80%A3%E7%B5%90.user.js
+// @updateURL https://update.greasyfork.org/scripts/423403/%E5%A2%9E%E5%8A%A0%E6%9C%83%E9%99%90%E6%B8%85%E5%96%AE%E5%88%86%E9%A0%81%E9%80%A3%E7%B5%90.meta.js
 // ==/UserScript==
 (function() {
     'use strict';
@@ -23,26 +25,24 @@
                 'en': 'Members-only-video List'
             };
             const anchorAttribute = 'data-anchor-attribute';
-            const anchorElement = document.querySelector("tp-yt-paper-tab:nth-last-of-type(2)");
+            const anchorElement = document.querySelector("yt-tab-shape:nth-last-of-type(2)");
 
             if (anchorElement === null) return;
             if (document.querySelector(`[${anchorAttribute}]`) !== null) return;
 
             let displayText = displayTextMap[document.documentElement.lang] || displayTextMap.en;
             const newNode = document.createRange().createContextualFragment(`
-                <tp-yt-paper-tab class="style-scope ytd-c4-tabbed-header-renderer" role="tab" aria-disabled="false" aria-selected="true" tabindex="0" ${anchorAttribute}><!--css-build:shady-->
-                    <div class="tab-content style-scope tp-yt-paper-tab">${displayText}</div>
-	                <paper-ripple class="style-scope tp-yt-paper-tab"><!--css-build:shady-->
-                        <div id="background" class="style-scope paper-ripple" style="opacity: 0.0084;"></div>
-		                <div id="waves" class="style-scope paper-ripple"></div>
-                    </paper-ripple>
-                </tp-yt-paper-tab>
+                <yt-tab-shape class="yt-tab-shape-wiz yt-tab-shape-wiz--host-clickable" role="tab" aria-selected="false" tabindex="0" tab-identifier="TAB_ID_SPONSORSHIP_PLAYLIST" tab-title="${displayText}" ${anchorAttribute}>
+                    <div class="yt-tab-shape-wiz__tab">${displayText}</div>
+                    <div class="yt-tab-shape-wiz__tab-bar">
+                    </div>
+                </yt-tab-shape>
             `);
             anchorElement.parentNode.insertBefore(newNode, anchorElement);
-            const target = document.querySelector("tp-yt-paper-tab:nth-last-of-type(3)");
+            const target = document.querySelector("yt-tab-shape:nth-last-of-type(3)");
 
             target.addEventListener('click', function() {
-                const chId = document.querySelector("ytd-c4-tabbed-header-renderer").__data.data.channelId;
+                const chId = document.querySelector('[itemprop="identifier"]').getAttribute("content");
                 const targetURL = `${location.protocol}//${location.host}/playlist?list=${chId.replace(/^UC/, 'UUMO')}`;
                 window.open(targetURL);
             });
@@ -52,10 +52,8 @@
             let observer = new MutationObserver(function(mutations) {
                 mutations.forEach(mutation => {
                     if (mutation.type == 'childList') {
-                        const target = mutation.target
-
-                        if (/ytd\-page\-manager/i.test(target.tagName) || target.id === 'tabsContent') {
-                           addLink()
+                        if (mutation.target.classList.contains("yt-tab-group-shape-wiz__tabs")) {
+                            addLink()
                         }
                     }
                 });
