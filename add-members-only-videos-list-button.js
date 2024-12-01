@@ -1,5 +1,5 @@
 // ==UserScript==
-// @version      1.0.5
+// @version      1.1.0
 // @author       TsukiAkiba, Danny Tsai
 // @description   增加YouTube會限清單分頁連結到頻道主頁上
 // @description:en  Add members-only-videos link to YouTube channel main page.
