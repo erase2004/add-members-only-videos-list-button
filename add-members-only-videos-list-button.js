@@ -15,50 +15,87 @@
 // ==/UserScript==
 (function() {
     'use strict';
+
+    let chId;
+    let button;
+
+    // not a fan of such approach, but no better solution for now
+    const ogFetch = window.fetch;
+    window.fetch = function(req, opts) {
+        if (req instanceof Request && req.url === "https://www.youtube.com/youtubei/v1/browse?prettyPrint=false") {
+            (async function() {
+                const clonedReq = await req.clone().json();
+                chId = clonedReq.browseId;
+            })();
+        }
+        return ogFetch(req, opts);
+    };
+
     window.onload = function() {
+        const displayTextMap = {
+            'zh-Hant-TW': '會限清單',
+            'zh-Hant-HK': '會限清單',
+            'zh-Hans-CN': '会限清单',
+            'ja-JP': 'メン限リスト',
+            'en': 'Members-only-video List'
+        };
+
+        const tabTagName = 'yt-tab-shape';
+        const buttonTabId = "TAB_ID_SPONSORSHIP_PLAYLIST";
+        const displayText = displayTextMap[document.documentElement.lang] || displayTextMap.en;
+        const anchorSelector = `${tabTagName}:nth-last-of-type(2)`;
+
         function addLink() {
-            const displayTextMap = {
-                'zh-Hant-TW': '會限清單',
-                'zh-Hant-HK': '會限清單',
-                'zh-Hans-CN': '会限清单',
-                'ja-JP': 'メン限リスト',
-                'en': 'Members-only-video List'
-            };
-            const anchorAttribute = 'data-anchor-attribute';
-            const anchorElement = document.querySelector("yt-tab-shape:nth-last-of-type(2)");
-
+            const anchorElement = document.querySelector(anchorSelector);
             if (anchorElement === null) return;
-            if (document.querySelector(`[${anchorAttribute}]`) !== null) return;
+            try {
+                anchorElement.parentNode.removeChild(button);
+            } catch {
+            }
 
-            let displayText = displayTextMap[document.documentElement.lang] || displayTextMap.en;
-            const newNode = document.createRange().createContextualFragment(`
-                <yt-tab-shape class="yt-tab-shape-wiz yt-tab-shape-wiz--host-clickable" role="tab" aria-selected="false" tabindex="0" tab-identifier="TAB_ID_SPONSORSHIP_PLAYLIST" tab-title="${displayText}" ${anchorAttribute}>
-                    <div class="yt-tab-shape-wiz__tab">${displayText}</div>
-                    <div class="yt-tab-shape-wiz__tab-bar">
-                    </div>
-                </yt-tab-shape>
-            `);
-            anchorElement.parentNode.insertBefore(newNode, anchorElement);
-            const target = document.querySelector("yt-tab-shape:nth-last-of-type(3)");
+            const newNode = document.querySelectorAll(tabTagName)[0].cloneNode(true);
+            newNode.removeAttribute('aria-selected');
+            newNode.setAttribute('tab-identifier', buttonTabId);
+            newNode.childNodes[0].textContent = displayText
 
-            target.addEventListener('click', function() {
-                const chId = document.querySelector('[itemprop="identifier"]').getAttribute("content");
-                const targetURL = `${location.protocol}//${location.host}/playlist?list=${chId.replace(/^UC/, 'UUMO')}`;
-                window.open(targetURL);
-            });
+            anchorElement.parentNode.insertBefore(button || newNode, anchorElement);
+            
+            if (!button) {
+                button = document.querySelector(`${tabTagName}:nth-last-of-type(3)`);
+                button.addEventListener('click', function() {
+                    if (!chId) chId = document.querySelector('[itemprop="identifier"]').getAttribute("content");
+                    const targetURL = `${location.protocol}//${location.host}/playlist?list=${chId.replace(/^UC/, 'UUMO')}`;
+                    window.open(targetURL);
+                });
+            }
         }
 
         if (window.MutationObserver) {
-            let observer = new MutationObserver(function(mutations) {
-                mutations.forEach(mutation => {
-                    if (mutation.type == 'childList') {
-                        if (mutation.target.classList.contains("yt-tab-group-shape-wiz__tabs")) {
-                            addLink()
+            const tabListClassname = 'tabGroupShapeTabs';
+            const observer = new MutationObserver(function(mutations) {
+                function mutationCheck(mutation) {
+                    if (mutation.type == 'childList' &&
+                        mutation.target.classList.contains(tabListClassname) && mutation.addedNodes.length > 0) {
+                            const roleOfTab = mutation.addedNodes[0].role;
+                            return roleOfTab === null;
                         }
-                    }
-                });
+                    return false;
+                }
+                if (mutations.some(mutationCheck)) {
+                    addLink();
+                }
             });
             observer.observe(document.querySelector('body'), { "childList": true, "subtree": true });
         }
+
+        function init() {
+            const anchorElement = document.querySelector(anchorSelector);
+            if (anchorElement) {
+                addLink();
+            } else {
+                setTimeout(init, 10);
+            }
+        }
+        init();
     };
 })();
